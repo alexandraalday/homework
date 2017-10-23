@@ -6,36 +6,31 @@ window.path = "http://localhost:3000/records?";
 
 // Your retrieve function plus any additional functions go here ...
 const retrieve = (options) => { 
-
-	let uri = new URI(window.path + 'limit=10&' + queryString);
     let optionzzz = options
-    let queryString = [];
 
-    Object.toQueryString = (optionzzz, base) => {
 
-        Object.keys(optionzzz).forEach((key) => {
+    const toQueryString = (object, base) => {
+        let queryString = [];
+
+        Object.keys(object).forEach((key) => {
+            console.log('object: ' + object);
+            console.log('keys: ' + key);
 
             let result,
                 value;
 
-            value =  optionzzz[key];
+            value = object[key];
+            console.log('value: ' + value);
 
             if (base) {
                 key = base + '[]';
             }
             switch (typeof value) {
                 case 'object': 
-                    result = Object.toQueryString(value, key); 
+                    result = toQueryString(value, key); 
                     break;
-                case 'array':
-                    let qs = {};
-                    value.forEach((val, i) => {
-                        qs[i] = val;
-                    });
-                    result = Object.toQueryString(qs, key);
-                    break;
-                default: 
-                    result = 'offset=' + (value - 1);
+                 default: 
+                    result = key + '=' + encodeURIComponent(value);
             }
 
             if (value != null) {
@@ -45,6 +40,9 @@ const retrieve = (options) => {
         return queryString.join('&');
     };
 
+    
+
+    let uri = new URI(window.path + 'limit=10&' + toQueryString(optionzzz).replace(/page/i, 'offset'));
 
     fetch(uri)
       .then(response => {
@@ -54,7 +52,10 @@ const retrieve = (options) => {
           return Promise.reject('Oh No! Something went wrong!')
         }
       })
-      .then(data => console.log('Have some data: ', data))
+      .then(data => {
+        console.log(uri)
+        console.log('Have some data: ', data);
+      })
       .catch(error => console.log('Peep this error: ', error));
 
 
