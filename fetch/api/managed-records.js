@@ -37,6 +37,9 @@ const retrieve = (options) => {
                 if (key == 'page'){
                     result = key.replace(/page/i, 'offset') + '=' + encodeURIComponent((value - 1) * 10);
                 }
+                if (key == 'colors[]'){
+                    result = key.replace(/colors/i, 'color') + '=' + encodeURIComponent((value));
+                }
                 
                 queryString.push(result);
             }
