@@ -34,6 +34,10 @@ const retrieve = (options) => {
             }
 
             if (value != null) {
+                if (key == 'page'){
+                    result = key.replace(/page/i, 'offset') + '=' + encodeURIComponent((value - 1) * 10);
+                }
+                
                 queryString.push(result);
             }
         });
@@ -42,7 +46,7 @@ const retrieve = (options) => {
 
     
 
-    let uri = new URI(window.path + 'limit=10&' + toQueryString(optionzzz).replace(/page/i, 'offset'));
+    let uri = new URI(window.path + 'limit=10&' + toQueryString(optionzzz));
 
     fetch(uri)
       .then(response => {
