@@ -5,22 +5,54 @@ import URI from "urijs";
 window.path = "http://localhost:3000/records?"; 
 
 // Your retrieve function plus any additional functions go here ...
-const retrieve = (options) => { 
-    let optionzzz = options
+const isPrimaryColor = (color) => {
+  return ["red", "blue", "yellow"].includes(color);
+}
 
+const transform = (jsonPayload, page) => {
+  console.log("Transforming!!")
+  console.log("jsonPayload: " + jsonPayload);
+  console.log("payload page: " + page);
+  const previousPage = page && page > 1 ? page - 1 : null;
+  const nextPage = jsonPayload.length > 10 ? page + 1 : null;
+  console.log("previous page: " + previousPage);
+  console.log("next page: " + nextPage);
+
+  if (jsonPayload.length > 10) {
+    jsonPayload.pop();
+  }
+
+  const ids = jsonPayload.map(item => item.id);
+
+  const open = jsonPayload
+    .filter(item => item.disposition === "open")
+    .map(item => {
+      item.isPrimary = isPrimaryColor(item.color);
+      return item;
+    });
+
+  const closedPrimaryCount = jsonPayload
+    .filter(item => item.disposition === "closed")
+    .reduce((total, item) => isPrimaryColor(item.color) ? total + 1 : total, 0);
+
+  let result = { previousPage, nextPage, ids, open, closedPrimaryCount };
+  console.log(result);
+  return { previousPage, nextPage, ids, open, closedPrimaryCount };
+}
+
+const retrieve = (options = {}) => { 
+    let optionzzz = options
+    const page = options.page || 1;
 
     const toQueryString = (object, base) => {
         let queryString = [];
 
         Object.keys(object).forEach((key) => {
-            console.log('object: ' + object);
-            console.log('keys: ' + key);
 
             let result,
                 value;
 
             value = object[key];
-            console.log('value: ' + value);
 
             if (base) {
                 key = base + '[]';
@@ -47,9 +79,7 @@ const retrieve = (options) => {
         return queryString.join('&');
     };
 
-    
-
-    let uri = new URI(window.path + 'limit=10&' + toQueryString(optionzzz));
+    let uri = new URI(window.path + 'limit=11&' + toQueryString(optionzzz));
 
     fetch(uri)
       .then(response => {
@@ -60,8 +90,8 @@ const retrieve = (options) => {
         }
       })
       .then(data => {
-        console.log(uri)
-        console.log('Have some data: ', data);
+        console.log("this is the uri: " + uri)
+        transform(data, page);
       })
       .catch(error => console.log('Peep this error: ', error));
 
